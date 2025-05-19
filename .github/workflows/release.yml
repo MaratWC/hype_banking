@@ -16,7 +16,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: main  # Checkout ke branch main
-          ref: main  # Checkout ke branch main
           
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
