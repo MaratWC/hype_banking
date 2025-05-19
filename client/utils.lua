@@ -13,10 +13,25 @@ function utils.sendMessage(action, data)
     })
 end
 
+function utils.createBlip(data)
+    local blip = AddBlipForCoord(data.coords.x, data.coords.y, data.coords.z)
+    SetBlipSprite(blip, data.sprite)
+    SetBlipDisplay(blip, data.display)
+    SetBlipScale(blip, data.scale)
+    SetBlipColour(blip, data.color)
+    SetBlipAsShortRange(blip, true)
+    BeginTextCommandSetBlipName('STRING')
+    AddTextComponentString(data.label)
+    EndTextCommandSetBlipName(blip)
+end
+
 --- Create Peds
 ---@param openBank function
 function utils.createPeds(openBank)
     for k, v in pairs(config.peds) do
+        local blipdata = v.blip or config.blip
+        blipdata.coords = v.coords
+        local blip = utils.createBlip(blipdata)
         local pts = lib.points.new({
             coords = vec4(v.coords.x, v.coords.y, v.coords.z, v.coords.w),
             heading = v.coords.w,
