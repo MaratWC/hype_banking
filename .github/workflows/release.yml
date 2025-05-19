@@ -31,6 +31,7 @@ jobs:
       - name: Bundle files
         run: |
           mkdir -p ./temp/hype_banking
+          mkdir -p ./temp/hype_banking/web/build
           cp -r ./bridge ./temp/hype_banking/
           cp -r ./client ./temp/hype_banking/
           cp -r ./locales ./temp/hype_banking/
