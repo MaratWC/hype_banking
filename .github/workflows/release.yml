@@ -7,7 +7,7 @@ on:
 
 jobs:
   create-release:
-    name: Build and Create Tagged Release
+    name: Build and Create Tagged release
     runs-on: ubuntu-latest
 
     steps:
@@ -21,9 +21,9 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2.2.2
+        uses: pnpm/action-setup@v4.0.0
         with:
-          version: 8.1.1
+          version: 9
 
       - name: Get variables
         id: get_vars
@@ -35,7 +35,7 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v2
         with:
-          node-version: 20.x
+          node-version: 18.x
           cache: "pnpm"
           cache-dependency-path: "web/pnpm-lock.yaml"
 
@@ -74,11 +74,13 @@ jobs:
           cp ./{server.lua,README.md,LICENSE,fxmanifest.lua,client.lua,init.lua} ./temp/hype_banking
           cp -r ./{setup,modules,data,locales} ./temp/hype_banking
           cp -r ./web/build ./temp/hype_banking/web/build
+          cp ./web/LICENSE ./temp/hype_banking/web/build
           cp -r ./web/images ./temp/hype_banking/web/images
           cd ./temp && zip -r ../hype_banking.zip ./hype_banking
 
       - name: Create Release
-        uses: marvinpinto/action-automatic-releases@v1.2.1
+        uses: "marvinpinto/action-automatic-releases@v1.2.1"
+        id: auto_release
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           title: "${{ env.RELEASE_VERSION }}"
@@ -87,3 +89,4 @@ jobs:
 
         env:
           CI: false
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
