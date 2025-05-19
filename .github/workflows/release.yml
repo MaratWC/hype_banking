@@ -28,13 +28,17 @@ jobs:
       - name: Build Svelte
         run: cd web && bun run build
         
-      - name: Update build directory
+      - name: Bundle files
         run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-          git add -f web/build
-          git commit -m "chore: build web for ${{ github.ref_name }}" || echo "No changes to commit"
-          git push origin main
+          mkdir -p ./temp/hype_banking
+          cp -r ./bridge ./temp/hype_banking/
+          cp -r ./client ./temp/hype_banking/
+          cp -r ./locales ./temp/hype_banking/
+          cp -r ./server ./temp/hype_banking/
+          cp -r ./shared ./temp/hype_banking/
+          cp -r ./web/build ./temp/hype_banking/web/build
+          cp ./fxmanifest.lua ./temp/hype_banking/
+          cd ./temp && zip -r ../hype_banking.zip ./hype_banking
           
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -43,37 +47,4 @@ jobs:
           draft: false
           prerelease: false
           generate_release_notes: true
-          
-  create-artifacts:
-    name: Create Artifacts
-    needs: create-release
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-          
-      - name: Build artifacts
-        run: |
-          mkdir -p ./temp/hype_banking
-          cp -r ./bridge ./temp/hype_banking/
-          cp -r ./client ./temp/hype_banking/
-          cp -r ./locales ./temp/hype_banking/
-          cp -r ./server ./temp/hype_banking/
-          cp -r ./shared ./temp/hype_banking/
-          cp -r ./web/build ./temp/hype_banking/web/
-          cp ./fxmanifest.lua ./temp/hype_banking/
-          cd ./temp && zip -r ../hype_banking.zip ./hype_banking
-          
-      - name: Update Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref_name }}
           files: hype_banking.zip
