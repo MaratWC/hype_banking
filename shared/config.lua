@@ -5,7 +5,7 @@ config.currency = 'USD'
 config.platinumThreshold = 75000 -- Amount required for an account to be considered platinum
 config.interactionType = 'ox_target' -- ox_target or interact https://github.com/darktrovx/interact
 
-config.framework = 'hype' -- esx / qb / qbx / hype
+config.framework = 'esx' -- esx / qb / qbx / hype
 
 config.App = {
     name = 'Hype Banking',
