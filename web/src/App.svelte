@@ -15,7 +15,7 @@
 
 
   onMount(() => {
-    fetchNui('appReady')
+    fetchNui('appReady', {}).catch((err) => {});
   })
 
 </script>
