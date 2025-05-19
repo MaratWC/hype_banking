@@ -410,7 +410,7 @@ lib.callback.register('hype_banking:server:deposit', function(source, data)
     local amount = tonumber(data.amount)
     if not amount or amount < 1 then
         lib.notify(source, {
-            message = locale("invalid_amount", "deposit"),
+            description =locale("invalid_amount", "deposit"),
             title = locale("bank_name"),
             type = "error"
         })
@@ -422,7 +422,7 @@ lib.callback.register('hype_banking:server:deposit', function(source, data)
     -- Check if player has enough cash
     if Player.getMoney('cash') < amount then
         lib.notify(source, {
-            message = locale("not_enough_money"),
+            description =locale("not_enough_money"),
             title = locale("bank_name"),
             type = "error"
         })
@@ -434,7 +434,7 @@ lib.callback.register('hype_banking:server:deposit', function(source, data)
         -- Check management access for business accounts
         if not utils.getManagementAccess(Player.job.name, Player.job.grade, 'deposit') then
             lib.notify(source, {
-                message = locale("no_access"),
+                description =locale("no_access"),
                 title = locale("bank_name"),
                 type = "error"
             })
@@ -482,7 +482,7 @@ lib.callback.register('hype_banking:server:withdraw', function (src, data)
     local amount, comment, fromAccount = tonumber(data.amount), data.comment, data.fromAccount
     if not amount or amount < 1 then
         lib.notify(src, {
-            message = locale("invalid_amount", "withdraw"),
+            description =locale("invalid_amount", "withdraw"),
             title = locale("bank_name"),
             type = "error"
         })
@@ -496,7 +496,7 @@ lib.callback.register('hype_banking:server:withdraw', function (src, data)
         -- Check management access for non-personal accounts
         if not utils.getManagementAccess(Player.job.name, Player.job.grade, 'withdraw') then
             lib.notify(src, {
-                message = locale("no_access"),
+                description =locale("no_access"),
                 title = locale("bank_name"),
                 type = "error"
             })
@@ -506,7 +506,7 @@ lib.callback.register('hype_banking:server:withdraw', function (src, data)
         -- Check if account has enough money
         if account.amount < amount then
             lib.notify(src, {
-                message = locale("not_enough_money"),
+                description =locale("not_enough_money"),
                 title = locale("bank_name"),
                 type = "error"
             })
@@ -536,7 +536,7 @@ lib.callback.register('hype_banking:server:withdraw', function (src, data)
         local playerMoney = Player.getMoney('bank')
         if playerMoney < amount then
             lib.notify(src, {
-                message = locale("not_enough_money"),
+                description =locale("not_enough_money"),
                 title = locale("bank_name"),
                 type = "error"
             })
@@ -571,7 +571,7 @@ lib.callback.register('hype_banking:server:transfer', function (src, data)
     local amount, comment, fromAccount, toAccount = tonumber(data.amount), data.comment, data.fromAccount, data.stateid
     if not amount or amount < 1 then
         lib.notify( src, {
-            message = locale("invalid_amount", "transfer"),
+            description =locale("invalid_amount", "transfer"),
             title = locale("bank_name"),
             type = "error"
         })
@@ -583,7 +583,7 @@ lib.callback.register('hype_banking:server:transfer', function (src, data)
     local account = accounts.getAccount(fromAccount)
     if account and not utils.getManagementAccess(Player.job.name, Player.job.grade, 'transfer') then
         lib.notify( src, {
-            message = locale("no_access"),
+            description =locale("no_access"),
             title = locale("bank_name"),
             type = "error"
         })
@@ -595,7 +595,7 @@ lib.callback.register('hype_banking:server:transfer', function (src, data)
         local accountMoney = account.amount
         if accountMoney < amount then
             lib.notify( src, {
-                message = locale("not_enough_money"),
+                description =locale("not_enough_money"),
                 title = locale("bank_name"),
                 type = "error"
             })
@@ -626,7 +626,7 @@ lib.callback.register('hype_banking:server:transfer', function (src, data)
         local Target = core.GetPlayer(tonumber(toAccount)) or core.GetPlayerById(toAccount)
         if not Target then
             lib.notify( src, {
-                message = locale("fail_transfer"),
+                description =locale("fail_transfer"),
                 title = locale("bank_name"),
                 type = "error"
             })
@@ -635,7 +635,7 @@ lib.callback.register('hype_banking:server:transfer', function (src, data)
         local accountMoney = account.amount
         if accountMoney < amount then
             lib.notify( src, {
-                message = locale("not_enough_money"),
+                description =locale("not_enough_money"),
                 title = locale("bank_name"),
                 type = "error"
             })
@@ -666,7 +666,7 @@ lib.callback.register('hype_banking:server:transfer', function (src, data)
         local accountMoney = Player.getMoney('bank')
         if accountMoney < amount then
             lib.notify( src, {
-                message = locale("not_enough_money"),
+                description =locale("not_enough_money"),
                 title = locale("bank_name"),
                 type = "error"
             })
@@ -676,7 +676,7 @@ lib.callback.register('hype_banking:server:transfer', function (src, data)
         local Target = core.GetPlayer(tonumber(toAccount)) or core.GetPlayerById(toAccount)
         if not Target then
             lib.notify( src, {
-                message = locale("fail_transfer"),
+                description =locale("fail_transfer"),
                 title = locale("bank_name"),
                 type = "error"
             })
