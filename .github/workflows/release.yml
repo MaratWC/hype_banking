@@ -1,4 +1,4 @@
-name: Create release
+name: Release
 
 on:
   push:
@@ -7,68 +7,67 @@ on:
 
 jobs:
   create-release:
-    if: github.actor_id != 210085057
+    name: Create Release
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Install zip
-        run: sudo apt install zip
-
-      - name: Install Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: Generate GitHub App token
-        id: app_token
-        uses: tibdex/github-app-token@v2
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      - name: Get latest code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          ref: ${{ github.event.repository.default_branch }}
-          token: ${{ steps.app_token.outputs.token }}
-
-      - name: Bump manifest version
-        run: bun run .github/actions/bump-manifest-version.js
-        env:
-          TGT_RELEASE_VERSION: ${{ github.ref_name }}
-
-      - name: Push version bump change
-        uses: EndBug/add-and-commit@v9
+          ref: main
+          
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          add: fxmanifest.lua
-          push: true
-          default_author: github_actions
-          message: 'chore: bump version to ${{ github.ref_name }}'
-
+          bun-version: latest
+          
       - name: Install dependencies
-        run: bun install --frozen-lockfile
-        working-directory: web
-
-      - name: Run build script
-        run: bun run build
-        working-directory: web
-
-      - name: Bundle files
+        run: cd web && bun install
+        
+      - name: Build Svelte
+        run: cd web && bun run build
+        
+      - name: Update build directory
         run: |
-          mkdir -p ./temp/hype_banking
-          cp ./{fxmanifest.lua,README.md} ./temp/hype_banking/
-          cp -r ./{bridge,client,server,shared,locales} ./temp/hype_banking/
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git add -f web/build
+          git commit -m "chore: build web for ${{ github.ref_name }}" || echo "No changes to commit"
+          git push origin main
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          
+  create-artifacts:
+    name: Create Artifacts
+    needs: create-release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+          
+      - name: Build artifacts
+        run: |
+          mkdir -p ./temp/hype_banking/web
           cp -r ./web/build ./temp/hype_banking/web/
           cd ./temp && zip -r ../hype_banking.zip ./hype_banking
-
-      - name: Create release
-        uses: 'marvinpinto/action-automatic-releases@v1.2.1'
+          
+      - name: Update Release
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: false
+          tag_name: ${{ github.ref_name }}
           files: hype_banking.zip
-
-      - name: Update tag
-        uses: EndBug/latest-tag@v1
-        with:
-          ref: ${{ github.ref_name }}
