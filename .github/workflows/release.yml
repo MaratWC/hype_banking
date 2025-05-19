@@ -1,38 +1,74 @@
-name: Build Svelte on Release
+name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
-  build:
+  create-release:
+    name: Create Release
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+        with:
+          fetch-depth: 0
+          
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: ./web/package-lock.json
-      
+          cache-dependency-path: './web/package-lock.json'
+          
       - name: Install dependencies
-        run: |
-          cd web
-          npm ci
-      
+        run: cd web && npm ci
+        
       - name: Build Svelte
-        run: |
-          cd web
-          npm run build
-      
-      - name: Commit and push build files
+        run: cd web && npm run build
+        
+      - name: Update build directory
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
           git add -f web/build
-          git commit -m "Build Svelte app for release ${{ github.event.release.tag_name }}" || echo "No changes to commit"
-          git push origin HEAD:${GITHUB_REF}
+          git commit -m "chore: build web for ${{ github.ref_name }}" || echo "No changes to commit"
+          git push
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          
+  create-artifacts:
+    name: Create Artifacts
+    needs: create-release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Build artifacts
+        run: |
+          mkdir -p ./temp/hype_banking
+          cp -r ./* ./temp/hype_banking/
+          cd ./temp && zip -r ../hype_banking.zip ./hype_banking
+          
+      - name: Update Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: hype_banking.zip
