@@ -16,18 +16,16 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: './web/package-lock.json'
+          bun-version: latest
           
       - name: Install dependencies
-        run: cd web && npm ci
+        run: cd web && bun install
         
       - name: Build Svelte
-        run: cd web && npm run build
+        run: cd web && bun run build
         
       - name: Update build directory
         run: |
@@ -56,10 +54,10 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
         with:
-          node-version: '18'
+          bun-version: latest
           
       - name: Build artifacts
         run: |
