@@ -63,7 +63,6 @@ end
 ---@return Account | nil
 function accounts.new(data)
     if cachedAccounts[data.id] then
-        lib.print.info(('Account with id %s already exists'):format(data.id))
         return end
     local acc = account:new(data)
     cachedAccounts[acc.id] = acc
