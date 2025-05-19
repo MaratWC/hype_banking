@@ -19,6 +19,8 @@ A custom-enhanced version of [Renewed Banking Revamp](https://github.com/prosir/
 - 🎨 **UI Enhancements**  
   Refined and modernized interface for an improved user experience across both PC and mobile.
 
+- 📱 **Added interact support**
+  Check this out amazing [interact](https://github.com/darktrovx/interact).
 
 ## 🛠 Requirements
 
