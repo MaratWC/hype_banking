@@ -1,36 +1,32 @@
-if GetResourceState('es_extended') ~= 'started' then
+if GetResourceState('qb-core') ~= 'started' then
     return
 end
 local core = {}
-local success, esx = pcall(function ()
-    local obj = exports.es_extended:getSharedObject()
+local success, QB = pcall(function ()
+    local obj = exports['qb-core']:GetCoreObject()
     return obj
 end)
 
 if not success then return end
 
 local function createPlayerObject(player)
+    local playerData = player.PlayerData
     return {
-        identifier = player.identifier,
-        source = player.source,
-        name = player.name,
+        identifier = playerData.citizenid,
+        source = playerData.source,
+        name = ('%s %s'):format(playerData.charinfo.firstname, playerData.charinfo.lastname),
         job = {
-            name = player.job.name,
-            grade = player.job.grade
+            name = playerData.job.name,
+            grade = playerData.job.grade.level
         },
         removeMoney = function (type, amount, reason)
-            type = type == 'cash' and 'money' or type
-            player.removeAccountMoney(type, amount, reason)
-            return true
+            return player.Functions.RemoveMoney(type, amount, reason)
         end,
         addMoney = function (type, amount, reason)
-            type = type == 'cash' and 'money' or type
-            player.addAccountMoney(type, amount, reason)
-            return true
+            return player.Functions.AddMoney(type, amount, reason)
         end,
         getMoney = function (type)
-            type = type == 'cash' and 'money' or type
-            return player.getAccount(type).money
+            return player.Functions.GetMoney(type)
         end,
     }
 end
@@ -39,7 +35,7 @@ end
 ---@param source number | string | integer
 function core.GetPlayer(source)
     if source == '' then return end
-    local player = esx.GetPlayerFromId(source)
+    local player = QB.Functions.GetPlayer(source)
     if not player then return end
     return createPlayerObject(player)
 end
@@ -48,22 +44,19 @@ end
 ---@param identifier string
 function core.GetPlayerById(identifier)
     if identifier == '' then return end
-    local player = esx.GetPlayerFromIdentifier(identifier)
+    local player = QB.Functions.GetPlayerByCitizenId(identifier)
     if not player then return end
     return createPlayerObject(player)
 end
 
 function core.GetJobs()
     local jobs = {}
-    esx.RefreshJobs()
-    local frameworkJobs = esx.GetJobs()
-    for jobName, job in pairs(frameworkJobs) do
+    for jobName, job in pairs(QB.Shared.Jobs) do
         jobs[jobName] = {
             label = job.label,
             name = jobName
         }
     end
-
     return jobs
 end
 
@@ -74,17 +67,19 @@ end
 --- On Framework Player Loaded
 ---@param cb function
 function core.onPlayerLoad(cb)
-    AddEventHandler('esx:playerLoaded', function (playerId, xPlayer, isNew)
-        cb(xPlayer.identifier)
+    AddEventHandler('QBCore:Server:PlayerLoaded', function (Player)
+        cb(Player?.PlayerData?.citizenid)
     end)
 end
 
 --- On Resource Start To Load Player Data
 ---@param cb function
 function core.onResourceStart(cb)
-    local players = ESX.GetExtendedPlayers()
+    local players = QB.Functions.GetQBPlayers()
     for _, Player in pairs(players) do
-        cb(Player.identifier)
+        if Player then
+            cb(Player?.PlayerData?.citizenid)
+        end
     end
 end
 

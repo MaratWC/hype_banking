@@ -4,12 +4,6 @@ end
 local core = {}
 local success, hype = pcall(function ()
     local obj = exports.hype_core:getSharedObject()
-    if obj.PlayerLoaded then
-        PlayerData.job = {
-            name = obj.PlayerData.job.name,
-            grade = obj.PlayerData.job.grade,
-        }
-    end
     return obj
 end)
 
