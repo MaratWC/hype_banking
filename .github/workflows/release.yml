@@ -31,13 +31,13 @@ jobs:
       - name: Bundle files
         run: |
           mkdir -p ./temp/hype_banking
-          mkdir -p ./temp/hype_banking/web/build
+          mkdir -p ./temp/hype_banking/web
           cp -r ./bridge ./temp/hype_banking/
           cp -r ./client ./temp/hype_banking/
           cp -r ./locales ./temp/hype_banking/
           cp -r ./server ./temp/hype_banking/
           cp -r ./shared ./temp/hype_banking/
-          cp -r ./web/build ./temp/hype_banking/web/build
+          cp -r ./web/build ./temp/hype_banking/web/
           cp ./fxmanifest.lua ./temp/hype_banking/
           cd ./temp && zip -r ../hype_banking.zip ./hype_banking
           
