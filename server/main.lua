@@ -13,6 +13,13 @@ local function onPlayerLoad(identifier)
     if not identifier then return end
     local account = MySQL.single.await('SELECT id, isFrozen, transactions FROM player_transactions WHERE id = ?', {identifier})
     
+    if not account then
+        MySQL.insert.await('INSERT INTO player_transactions (id, isFrozen, transactions) VALUES (?, ?, ?)', {identifier, 0, '[]'})
+        account = {
+            isFrozen = false,
+        }
+    end
+
     if not cachedPlayers[identifier] then
         cachedPlayers[identifier] = {
             isFrozen = account.isFrozen,
@@ -743,7 +750,37 @@ AddEventHandler('onResourceStart', function (res)
     core.onResourceStart(onPlayerLoad)
 end)
 
+
+
 MySQL.ready(function ()
+    local createTables = {
+        { query = "CREATE TABLE IF NOT EXISTS `bank_accounts_new` (`id` varchar(50) NOT NULL, `amount` int(11) DEFAULT 0, `transactions` longtext DEFAULT '[]', `auth` longtext DEFAULT '[]', `isFrozen` int(11) DEFAULT 0, `creator` varchar(50) DEFAULT NULL, PRIMARY KEY (`id`));", values = nil },
+        { query = "CREATE TABLE IF NOT EXISTS `player_transactions` (`id` varchar(50) NOT NULL, `isFrozen` int(11) DEFAULT 0, `transactions` longtext DEFAULT '[]', PRIMARY KEY (`id`));", values = nil },
+        { query = [[
+        CREATE TABLE IF NOT EXISTS `invoices` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `invoice_id` varchar(255) NOT NULL,
+            `receiver_name` varchar(255) NOT NULL,
+            `receiver_citizenid` varchar(255) NOT NULL,
+            `receiver_job` varchar(255) NOT NULL,
+            `author_name` varchar(255) NOT NULL,
+            `author_citizenid` varchar(255) NOT NULL,
+            `author_job` varchar(255) NOT NULL,
+            `amount` int(11) NOT NULL,
+            `total` int(11) NOT NULL,
+            `vat` double NOT NULL DEFAULT 0,
+            `item` varchar(255) NOT NULL,
+            `note` varchar(255) NOT NULL,
+            `created_date` int(11) NOT NULL,
+            `status` varchar(255) NOT NULL,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `invoice_id` (`invoice_id`)
+            ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+        ]], values = nil}
+    }
+    
+    assert(MySQL.transaction.await(createTables), "Failed to create tables")
+
     local registeredAccounts = MySQL.query.await('SELECT * FROM bank_accounts_new')
     for _, v in pairs(registeredAccounts) do
         accounts.new({
