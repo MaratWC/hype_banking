@@ -59,6 +59,13 @@ config.peds = {
     [1] = { -- Pacific Standard
         model = 'u_m_m_bankman',
         coords = vector4(241.44, 227.19, 106.29, 170.43),
+        blip = {
+            sprite = 108,
+            display = 4,
+            scale = 0.8,
+            color = 5,
+            label = 'Pacific Bank',
+        },
         createAccounts = true
     },
     [2] = {
