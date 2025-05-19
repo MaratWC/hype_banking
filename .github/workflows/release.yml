@@ -1,92 +1,38 @@
-name: Release
+name: Build Svelte on Release
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  release:
+    types: [published]
 
 jobs:
-  create-release:
-    name: Build and Create Tagged release
+  build:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - name: Install archive tools
-        run: sudo apt install zip
-
-      - name: Checkout source code
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          fetch-depth: 0
-          ref: ${{ github.event.repository.default_branch }}
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4.0.0
-        with:
-          version: 9
-
-      - name: Get variables
-        id: get_vars
-        run: |
-          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-          echo "DATE=$(date +'%D')" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-
-      - name: Setup node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 18.x
-          cache: "pnpm"
-          cache-dependency-path: "web/pnpm-lock.yaml"
-
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: ./web/package-lock.json
+      
       - name: Install dependencies
-        run: pnpm i --frozen-lockfile
-        working-directory: web
-
-      - name: Run build
-        run: pnpm build
-        working-directory: web
-        env:
-          CI: false
-
-      - name: Bump manifest version
-        run: node .github/actions/bump-manifest-version.js
-        env:
-          TGT_RELEASE_VERSION: ${{ github.ref_name }}
-
-      - name: Push manifest change
-        uses: EndBug/add-and-commit@v8
-        with:
-          add: fxmanifest.lua
-          push: true
-          author_name: Manifest Bumper
-          author_email: 41898282+github-actions[bot]@users.noreply.github.com
-          message: "chore: bump manifest version to ${{ github.ref_name }}"
-
-      - name: Update tag ref
-        uses: EndBug/latest-tag@latest
-        with:
-          tag-name: ${{ github.ref_name }}
-
-      - name: Bundle files
         run: |
-          mkdir -p ./temp/hype_banking/web
-          cp ./{server.lua,README.md,LICENSE,fxmanifest.lua,client.lua,init.lua} ./temp/hype_banking
-          cp -r ./{setup,modules,data,locales} ./temp/hype_banking
-          cp -r ./web/build ./temp/hype_banking/web/build
-          cp ./web/LICENSE ./temp/hype_banking/web/build
-          cp -r ./web/images ./temp/hype_banking/web/images
-          cd ./temp && zip -r ../hype_banking.zip ./hype_banking
-
-      - name: Create Release
-        uses: "marvinpinto/action-automatic-releases@v1.2.1"
-        id: auto_release
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          title: "${{ env.RELEASE_VERSION }}"
-          prerelease: false
-          files: hype_banking.zip
-
-        env:
-          CI: false
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          cd web
+          npm ci
+      
+      - name: Build Svelte
+        run: |
+          cd web
+          npm run build
+      
+      - name: Commit and push build files
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git add -f web/build
+          git commit -m "Build Svelte app for release ${{ github.event.release.tag_name }}" || echo "No changes to commit"
+          git push origin HEAD:${GITHUB_REF}
