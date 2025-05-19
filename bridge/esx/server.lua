@@ -17,7 +17,7 @@ if not success then return end
 
 local function createPlayerObject(player)
     return {
-        identifier = player.citizenid,
+        identifier = player.identifier,
         source = player.source,
         name = player.name,
         job = {
@@ -81,7 +81,7 @@ end
 ---@param cb function
 function core.onPlayerLoad(cb)
     AddEventHandler('esx:playerLoaded', function (playerId, xPlayer, isNew)
-        cb(xPlayer.citizenid)
+        cb(xPlayer.identifier)
     end)
 end
 
@@ -90,7 +90,7 @@ end
 function core.onResourceStart(cb)
     local players = ESX.GetExtendedPlayers()
     for _, Player in pairs(players) do
-        cb(Player.citizenid)
+        cb(Player.identifier)
     end
 end
 
