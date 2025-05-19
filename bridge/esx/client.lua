@@ -1,0 +1,33 @@
+if GetResourceState('es_extended') ~= 'started' then
+    return
+end
+
+PlayerData = {}
+local success, esx = pcall(function ()
+    local obj = exports.es_extended:getSharedObject()
+    if obj.PlayerLoaded then
+        PlayerData.job = {
+            name = obj.PlayerData.job.name,
+            grade = obj.PlayerData.job.grade,
+        }
+    end
+    return obj
+end)
+
+if not success then return end
+
+RegisterNetEvent('esx:setJob', function (job)
+    if source == '' then return end
+    PlayerData.job = {
+        name = job.name,
+        grade = job.grade,
+    }
+end)
+
+RegisterNetEvent('esx:playerLoaded', function (PlayerData, isNew, skin)
+    if source == '' then return end
+    PlayerData.job = {
+        name = PlayerData.job.name,
+        grade = PlayerData.job.grade,
+    }
+end)
