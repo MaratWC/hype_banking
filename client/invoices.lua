@@ -26,7 +26,7 @@ end
 -- end)
 
 if config.interactionType == 'ox_target' then
-    exports.ox_target.addGlobalPlayer({
+    exports.ox_target:addGlobalPlayer({
         {
             name = "createInvoice",
             label = "Send Invoice",
